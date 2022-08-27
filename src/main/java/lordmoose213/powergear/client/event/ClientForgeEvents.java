@@ -5,6 +5,7 @@ import java.util.Map;
 
 import lordmoose213.powergear.PowerGear;
 import lordmoose213.powergear.client.KeyMappings;
+import lordmoose213.powergear.common.Effects;
 import lordmoose213.powergear.reg.ItemReg;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,9 +27,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 
+
 @Mod.EventBusSubscriber(modid = PowerGear.MOD_ID, bus = Bus.FORGE, value = Dist.CLIENT)
 public final class ClientForgeEvents {
-	
+
+	static int iteratorNV = 0;
+	static boolean persistentNV = false;
+
 	@SuppressWarnings("resource")
 	@SubscribeEvent
 	public static void clientTick(ClientTickEvent event) {
@@ -42,7 +47,12 @@ public final class ClientForgeEvents {
 		ItemStack playerLeggings;
 		ItemStack PlayerBoots;
 		MobEffectInstance helmetNightVision = new MobEffectInstance(MobEffects.NIGHT_VISION, 400, 0, true, true, true);
-		
+
+
+
+
+
+
 		//Only runs if the player actually exists, if the player does not exist then it is null and it crashes
 		if(player != null) {
 			//Actually assigns the variables to properties of the player
@@ -53,15 +63,27 @@ public final class ClientForgeEvents {
 			playerLeggings = player.getItemBySlot(EquipmentSlot.LEGS);
 			PlayerBoots = player.getItemBySlot(EquipmentSlot.FEET);
 			
-			
 			if(KeyMappings.testKeyMap.consumeClick() && playerHelmet.is(ItemReg.HELMET_1.get())) {
 				level.playSound(player, player.getX(), player.getY()+1.0,player.getZ(), SoundEvents.DRIPSTONE_BLOCK_FALL, SoundSource.NEUTRAL, .5F, .5F);
-				if(!player.hasEffect(MobEffects.NIGHT_VISION)) {
+				if(!player.hasEffect(helmetNightVision.getEffect())) {
 					player.addEffect(helmetNightVision, player);
-					System.out.println("1");
-				} else if(player.hasEffect(MobEffects.NIGHT_VISION)) {
-					player.removeEffect(MobEffects.NIGHT_VISION);
-					System.out.println("2");
+					persistentNV = true;
+					System.out.println("persistent nv = " + persistentNV);
+					System.out.println("NV ON");
+				} else if(player.hasEffect(helmetNightVision.getEffect())) {
+					player.removeEffect(helmetNightVision.getEffect());
+					persistentNV = false;
+					System.out.println("NV OFF");
+					System.out.println("persistent nv = " + persistentNV);
+				}
+			}
+			if(persistentNV){
+				iteratorNV++;
+				if(iteratorNV >= 40){
+					player.addEffect(helmetNightVision, player);
+					iteratorNV = 0;
+					System.out.println("persistent nv = " + persistentNV);
+					System.out.println("NV Renewed");
 				}
 			}
 			//Start next one that relies on the player here.
